@@ -4,14 +4,11 @@ const User = require('../models/userModel');
 const { validationResult } = require('express-validator');
 const {validateEmail,validatePassword} = require('./customValidators')
 
+
 router.get('/', function(req, res) {
-
-  res.render("hello-world", { errors: [] });
-
+res.render("hello-world", { errors: [] });
 });
-
 //route for handling form submission with validations
-
 router.post('/createUser', [
   // Add custom validation that required/imported
     validateEmail,
@@ -19,31 +16,28 @@ router.post('/createUser', [
   ], function (req, res) {
     // Access the validation errors from the request object
     const errors = req.validationErrors || [];
- 
-    // Validate the request
+     // Validate the request
     const validationResultErrors = validationResult(req);
     if (!validationResultErrors.isEmpty()) {
       // Merge the errors from validation result into the existing errors
       errors.push(...validationResultErrors.array());
     }
- 
     if (errors.length > 0) {
       // There are validation errors, render the form with errors
       res.render('hello-world', { errors, email: req.body.email });
     } else {
       const { email, password } = req.body;
-
-
       // Create a new User object
       const newUser = new User({
       email,
       password,
       });
-     
       // Save the User object to the database
-      newUser.save()
+    newUser.save()
       .then(() => {
-      res.render('form',{message:"Data saved to db"});
+      res.render('form-data',{
+        message:"Data saved to db"
+      });
       })
       .catch((error) => {
       console.error(error);
@@ -51,5 +45,32 @@ router.post('/createUser', [
       });
     }
   });
- 
+// for getting data from db
+router.get('/getUser', function (req,res) {
+     User.find().then(data => {
+         res.render('index', {data:data})
+  }).catch(error => {
+      console.error(error);
+      
+    });
+  })
+//for about-us page
+  router.get('/about-us', function (req,res) {
+    res.render('about-us')
+  })
+
+  router.get('/page/:title', (req, res) => {
+    const title = req.params.title;
+   res.render('page',{str:title})
+});
+
+
+ router.get('/count/:num', (req, res) => {
+  const count = req.params.num;
+  res.render('count',{count:count})
+});
+
+router.get('/login', (req, res) => {
+    res.redirect('/')
+});
 module.exports = router;
